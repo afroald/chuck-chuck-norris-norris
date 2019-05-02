@@ -5,6 +5,7 @@
     <div :class="$style.content">
       <div :class="$style.randomJokes">
         <h2>Jokes</h2>
+
         <button @click="loadJokes">
           Load 10 random jokes
         </button>
@@ -23,7 +24,14 @@
       </div>
 
       <div :class="$style.favorites">
-        <h2>Favorites</h2>
+        <h2>Favorites ({{ favorites.length }})</h2>
+
+        <button
+            @click="toggleAutomaticFavoriter"
+        >
+          {{ automaticFavoriterEnabled ? 'Disable' : 'Enable' }} automatic favoriter
+        </button>
+
         <joke-table :jokes="favorites">
           <template v-slot:row="{ joke }">
             <td>{{ joke.joke }}</td>
@@ -53,11 +61,23 @@ export default {
       jokes: [],
       favorites: [],
       canFavorite: false,
+      automaticFavoriterEnabled: false,
     };
   },
   computed: {
     favoriteIds() {
       return this.favorites.map(joke => joke.id);
+    },
+  },
+  watch: {
+    automaticFavoriterEnabled(enabled) {
+      if (!enabled && this.timer) {
+        clearInterval(this.timer);
+      } else {
+        this.timer = setInterval(() => {
+          this.addRandomJokeToFavorites();
+        }, 5000);
+      }
     },
   },
   created() {
@@ -84,6 +104,21 @@ export default {
     updateFavorites() {
       this.favorites = this.favoriteRepository.all();
       this.canFavorite = !this.favoriteRepository.isFull();
+    },
+
+    toggleAutomaticFavoriter() {
+      this.automaticFavoriterEnabled = !this.automaticFavoriterEnabled;
+    },
+
+    addRandomJokeToFavorites() {
+      if (this.favoriteRepository.isFull()) {
+        return;
+      }
+
+      this.jokeFetcher.fetchJoke()
+        .then((joke) => {
+          this.addJokeToFavorites(joke);
+        });
     },
   },
 };

@@ -1,5 +1,5 @@
-export function JokeRepository(storage) {
-  const storageKey = 'jokes';
+export function JokeRepository(storage, prefix = 'default') {
+  const storageKey = `jokes-${prefix}`;
   let jokes = [];
 
   /* PRIVATE */
@@ -39,6 +39,18 @@ export function JokeRepository(storage) {
 
   this.has = function has(id) {
     return jokes.map(joke => joke.id).includes(id);
+  };
+
+  this.remove = function remove(id) {
+    const jokeToRemove = this.get(id);
+
+    if (!jokeToRemove) {
+      return;
+    }
+
+    const jokeToRemoveIndex = jokes.indexOf(jokeToRemove);
+    jokes.splice(jokeToRemoveIndex, 1);
+    persist();
   };
 
   /* INITIALIZING */

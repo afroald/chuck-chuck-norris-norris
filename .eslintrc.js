@@ -3,7 +3,6 @@ const webpackConfig = require('./webpack.config');
 module.exports = {
   root: true,
   env: {
-    node: true,
     browser: true,
   },
   extends: [

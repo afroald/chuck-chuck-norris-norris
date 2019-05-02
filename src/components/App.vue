@@ -12,7 +12,7 @@
         <joke-table :jokes="jokes">
           <template v-slot:row="{ joke }">
             <td>{{ joke.joke }}</td>
-            <td>
+            <td v-if="canFavorite">
               <add-to-favorites-button
                   :favorited="favoriteIds.includes(joke.id)"
                   @click.native="addJokeToFavorites(joke)"
@@ -47,11 +47,12 @@ import JokeTable from './JokeTable.vue';
 
 export default {
   components: { AddToFavoritesButton, JokeTable },
-  inject: ['jokeFetcher', 'favoritesRepository'],
+  inject: ['jokeFetcher', 'favoriteRepository'],
   data() {
     return {
       jokes: [],
       favorites: [],
+      canFavorite: false,
     };
   },
   computed: {
@@ -71,17 +72,18 @@ export default {
     },
 
     addJokeToFavorites(joke) {
-      this.favoritesRepository.store(joke);
+      this.favoriteRepository.store(joke);
       this.updateFavorites();
     },
 
     removeJokeFromFavorites(joke) {
-      this.favoritesRepository.remove(joke.id);
+      this.favoriteRepository.remove(joke.id);
       this.updateFavorites();
     },
 
     updateFavorites() {
-      this.favorites = this.favoritesRepository.all();
+      this.favorites = this.favoriteRepository.all();
+      this.canFavorite = !this.favoriteRepository.isFull();
     },
   },
 };
